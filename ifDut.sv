@@ -5,7 +5,10 @@
 //Page:     VLSI Technology
 //--------------------------------------
 //APB interface
-interface ifApbMaster (input logic pclk, input logic preset_n);
+//interface ifApbMaster (input logic pclk, input logic preset_n);
+interface ifApbMaster;
+  logic pclk;
+  logic preset_n;
   logic psel;
   logic penable;
   logic pwrite;
