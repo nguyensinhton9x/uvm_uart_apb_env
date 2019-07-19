@@ -28,6 +28,8 @@ module testTop;
   `include "cApbMasterMonitor.sv"
   `include "uvm_env.sv"
   
+    //cTest coTest = new;
+  
     wire ctrl_if_0, ctrl_if_1;
     wire uart_0to1, uart_1to0;
     wire ctrl_fif_0, ctrl_fif_1;
@@ -91,8 +93,8 @@ module testTop;
    );
   
   initial begin
-    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coTest.*","vifApbMaster_0",vifApbMaster_0);
-    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coTest.*","vifApbMaster_1",vifApbMaster_1);
+    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coEnv.coApbMasterAgentTx*","vifApbMaster",vifApbMaster);
+    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coEnv.coApbMasterAgentRx*","vifApbMaster",vifApbMaster);
   end
   
   initial begin

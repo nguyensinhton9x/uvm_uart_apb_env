@@ -12,7 +12,7 @@
 //`include "ifDut.sv"
 class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //1. Declare the virtual interface
-  virtual interface ifApbMaster uart_ifApbMaster;
+  virtual interface ifApbMaster uart_vifApbMaster;
   //2. Register to the factory
   //`uvm_component_utils is for non-parameterized classes
   `uvm_component_utils(cApbMasterDriver)
@@ -33,13 +33,13 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
     //If the call "get" is unsuccessful, the fatal is triggered
     if (!uvm_config_db#(virtual interface ifApbMaster)::get(.cntxt(uvm_root::get()),
           .inst_name("*"),
-          .field_name("ifApbMaster_top"),
-          .value(uart_ifApbMaster))) begin
+          .field_name("vifApbMaster"),
+          .value(uart_vifApbMaster))) begin
        //`uvm_fatal(ID, MSG)
        //ID: message tag
        //MSG message text
        //get_full_name returns the full hierarchical name of the driver object
-       `uvm_fatal("NON-APBIF", {"A virtual interface must be set for: ", get_full_name(), ".uart_ifApbMaster"})
+       `uvm_fatal("NON-APBIF", {"A virtual interface must be set for: ", get_full_name(), "uart_vifApbMaster"})
      end
       //
       `uvm_info(get_full_name(), "Build phase completed.", UVM_LOW)
@@ -59,10 +59,10 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //Run time: run until the end of the simulation
   virtual task reset_all();
     while (1) begin
-      @ (negedge uart_ifApbMaster.preset_n);
+      @ (negedge uart_vifApbMaster.preset_n);
       `uvm_info (get_type_name(), "Resetting", UVM_LOW)
-      uart_ifApbMaster.psel    = 1'b0;
-      uart_ifApbMaster.penable = 1'b0;
+      uart_vifApbMaster.psel    = 1'b0;
+      uart_vifApbMaster.penable = 1'b0;
     end
   endtask: reset_all
   //Initiate the communication with the sequencer to get a sequence (a transaction)
@@ -70,7 +70,7 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //Run time: run until the end of the simulation
   virtual task get_seq_and_drive();
     while (1) begin
-      if (uart_ifApbMaster.preset_n) begin
+      if (uart_vifApbMaster.preset_n) begin
         //The seq_item_port.get_next_item is used to get items from the sequencer
         seq_item_port.get_next_item(req);
         //req is assigned to convert_seq2apb to drive the APB interface
@@ -90,39 +90,39 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
     //TODO: compile error - userApbTransaction_on khong co trong class coApbTransaction, --> apb_seq_on (fixed ???)
     if (userApbTransaction.apb_seq_on) begin
       //Initiate a transfer by a rising edge of the APB clock
-      repeat (1) @ (posedge uart_ifApbMaster.pclk);
+      repeat (1) @ (posedge uart_vifApbMaster.pclk);
       //SETUP state of APB protocol
-      uart_ifApbMaster.psel         = 1'b1;
-      uart_ifApbMaster.pwrite       = userApbTransaction.pwrite; //Read or Write
-      uart_ifApbMaster.paddr[31:0]  = userApbTransaction.paddr[31:0];
-      uart_ifApbMaster.pwdata[31:0] = userApbTransaction.pwdata[31:0];
-      uart_ifApbMaster.pstrb[3:0]   = userApbTransaction.pstrb[3:0];
-      repeat (1) @ (posedge uart_ifApbMaster.pclk); //Hold one cycle
+      uart_vifApbMaster.psel         = 1'b1;
+      uart_vifApbMaster.pwrite       = userApbTransaction.pwrite; //Read or Write
+      uart_vifApbMaster.paddr[31:0]  = userApbTransaction.paddr[31:0];
+      uart_vifApbMaster.pwdata[31:0] = userApbTransaction.pwdata[31:0];
+      uart_vifApbMaster.pstrb[3:0]   = userApbTransaction.pstrb[3:0];
+      repeat (1) @ (posedge uart_vifApbMaster.pclk); //Hold one cycle
       //ACCESS state of APB protocol
-      uart_ifApbMaster.penable = 1'b1;
+      uart_vifApbMaster.penable = 1'b1;
       //PREADY
       //Check the timeout of APB interface
       do begin
         if (i == userApbTransaction.APB_TRANSACTION_TIMEOUT) begin
           `uvm_error ("[APB_TIMEOUT]", "PREADY is not asserted 1")
         end
-        repeat (1) @ (posedge uart_ifApbMaster.pclk); //Hold one cycle
+        repeat (1) @ (posedge uart_vifApbMaster.pclk); //Hold one cycle
         i = i+1;
-      end while (~uart_ifApbMaster.pready && (i <= userApbTransaction.APB_TRANSACTION_TIMEOUT));
+      end while (~uart_vifApbMaster.pready && (i <= userApbTransaction.APB_TRANSACTION_TIMEOUT));
       //Check READ transaction
-      if (~uart_ifApbMaster.pwrite && uart_ifApbMaster.pready) begin
-         userApbTransaction.prdata[31:0] = uart_ifApbMaster.prdata[31:0];
+      if (~uart_vifApbMaster.pwrite && uart_vifApbMaster.pready) begin
+         userApbTransaction.prdata[31:0] = uart_vifApbMaster.prdata[31:0];
       end
-      userApbTransaction.pslverr = uart_ifApbMaster.pslverr;
+      userApbTransaction.pslverr = uart_vifApbMaster.pslverr;
       //
       if (~userApbTransaction.apb_consecutive_on) begin
-         uart_ifApbMaster.psel    = 1'b0;
+         uart_vifApbMaster.psel    = 1'b0;
       end
-      uart_ifApbMaster.penable = 1'b0;
+      uart_vifApbMaster.penable = 1'b0;
     end
     else begin
-      uart_ifApbMaster.psel    = 1'b0;
-      uart_ifApbMaster.penable = 1'b0;
+      uart_vifApbMaster.psel    = 1'b0;
+      uart_vifApbMaster.penable = 1'b0;
     end
   endtask: convert_seq2apb
 endclass

@@ -13,14 +13,23 @@ typedef class cApbMasterAgent;
 
 class cApbMasterSequencer extends uvm_sequencer#(cApbTransaction);
 	
-	cApbMasterAgent coApbMasterAgentTx;
-	cApbMasterAgent coApbMasterAgentRx;
+	cApbMasterAgent coApbMasterAgent;
+	
+	virtual ifInterrupt vifInterrupt;
 	
 	`uvm_component_utils(cApbMasterSequencer)
   
 	function new (string name = "cApbMasterSequencer", uvm_component parent = null);
 		super.new(name,parent);
 	endfunction
+	
+	function void build_phase(uvm_phase phase);
+		super.build_phase(phase);
+		if(!uvm_config_db#(virtual interface ifInterrupt)::get(this,"","vifInterrupt",vifInterrupt)) begin
+			`uvm_fatal("cVSequencer","Can't get vifInterrupt!!!")
+		end
+	endfunction
+	
 endclass
 
 // Need to add other sequences (e.g. cApbMasterReadSeq)
@@ -55,6 +64,8 @@ class cApbMasterAgent extends uvm_agent;
     cApbMasterSequencer coApbMasterSequencer;
     cApbMasterMonitor   coApbMasterMonitor;
 
+    `uvm_component_utils(cApbMasterAgent)
+	
     function new(string name = "cApbMasterAgent", uvm_component parent);
         super.new(name, parent);
     endfunction
@@ -71,19 +82,20 @@ class cApbMasterAgent extends uvm_agent;
         coApbMasterDriver.seq_item_port.connect(coApbMasterSequencer.seq_item_export);
     endfunction
 
-    `uvm_component_utils(cApbMasterAgent)
 endclass
 
 
 class cVSequencer extends uvm_sequencer#(cApbTransaction);
-	`uvm_component_utils(cVSequencer)
 
-	cApbMasterSequencer cApbMasterSequencerTx;
-	cApbMasterSequencer cApbMasterSequencerRx;
+	//cApbMasterSequencer coApbMasterSequencerTx;
+	//cApbMasterSequencer coApbMasterSequencerRx;
+	
+	cApbMasterAgent coApbMasterAgentTx;
+	cApbMasterAgent coApbMasterAgentRx;
 
 	cScoreboard coScoreboard;
-
-	virtual interface ifInterrupt vifInterrupt;
+	
+	`uvm_component_utils(cVSequencer)
 
    // TODO: component must have variable "parent"
    //       object must not have veriable "parent" (refer to class cVSequence) 
@@ -93,9 +105,6 @@ class cVSequencer extends uvm_sequencer#(cApbTransaction);
 
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
-		if(!uvm_config_db#(virtual interface ifInterrupt)::get(this,"","vifInterrupt",vifInterrupt)) begin
-			`uvm_error("cVSequencer","Can't get vifInterrupt!!!")
-		end
 	endfunction
 
 endclass
@@ -114,8 +123,6 @@ class cVSequence extends uvm_sequence#(cApbTransaction);
 endclass
 
 class cEnv extends uvm_env;
-	`uvm_component_utils_begin(cEnv)
-	`uvm_component_utils_end
 
 	cApbMasterAgent coApbMasterAgentTx;
 	cApbMasterAgent coApbMasterAgentRx;
@@ -123,7 +130,9 @@ class cEnv extends uvm_env;
 	cScoreboard coScoreboard;
 
 	cVSequencer coVSequencer;
-
+	
+	`uvm_component_utils(cEnv)
+	
 	function new (string name = "cEnv", uvm_component parent = null);
 		super.new(name,parent);
 	endfunction
@@ -139,19 +148,23 @@ class cEnv extends uvm_env;
 	function void connect_phase(uvm_phase phase);
 		super.connect_phase(phase);
 
-		$cast(coVSequencer.cApbMasterSequencerTx.coApbMasterAgentTx, coApbMasterAgentTx);
-		$cast(coVSequencer.cApbMasterSequencerRx.coApbMasterAgentRx, coApbMasterAgentRx);
+		$cast(coVSequencer.coApbMasterAgentTx, this.coApbMasterAgentTx);
+		$cast(coVSequencer.coApbMasterAgentRx, this.coApbMasterAgentRx);
+		
+		$cast(coVSequencer.coScoreboard, this.coScoreboard);
 
 		coApbMasterAgentTx.coApbMasterMonitor.ap_toScoreboardWrite.connect(coScoreboard.aimp_frmMonitorWrite);
 		// Add more connection here
 	endfunction
+	
 endclass
 
 class cTest extends uvm_test;
-	`uvm_component_utils(cTest)
 
 	cEnv coEnv;
 	cVSequence coVSequence; 
+		
+	`uvm_component_utils(cTest)
 
 	function new (string name = "cTest", uvm_component parent = null);
 		super.new(name,parent);
@@ -165,6 +178,7 @@ class cTest extends uvm_test;
 
 	task run_phase(uvm_phase phase);
 		super.run_phase(phase);
+		`uvm_info(get_full_name(), "run phase completed.", UVM_LOW)
 		phase.raise_objection(this);
 		fork
 			coVSequence.start(coEnv.coVSequencer);
@@ -176,6 +190,7 @@ class cTest extends uvm_test;
 		disable fork;
 		phase.drop_objection(this);
 	endtask
+
 endclass
 
 

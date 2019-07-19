@@ -90,6 +90,80 @@ run 1ns
 
 
 
+Problems:
+--------------------------------------------------
 
+1/ Correct testTOP.sv
 
+Change from
 
+    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coEnv*","vifApbMaster_0",vifApbMaster_0);
+    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coEnv*","vifApbMaster_1",vifApbMaster_1);
+
+to
+
+    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coEnv.coApbMasterAgentTx*","vifApbMaster",vifApbMaster_Tx);
+    uvm_config_db#(virtual interface ifApbMaster)::set(null,"uvm_test_top.coEnv.coApbMasterAgentRx*","vifApbMaster",vifApbMaster_Rx);
+
+2/ Correct uvm_env.sv
+
+Change from "coEnd" to "coEnv"
+
+3/ Corrent cApbMasterDriver.sv
+
+Change from
+
+if (!uvm_config_db#(virtual interface ifApbMaster)::get(.cntxt(uvm_root::get()),
+          .inst_name("*"),
+          .field_name("vifApbMaster"),
+          .value(uart_vifApbMaster))) begin
+
+to
+
+if (!uvm_config_db#(virtual interface ifApbMaster)::get(.cntxt(this),
+          .inst_name(""),
+          .field_name("vifApbMaster"),
+          .value(uart_vifApbMaster))) begin
+          
+          
+4/ Correct testTop (Add the interrupt interface connection)
+
+    ifInterrupt vifInterrupt_Tx();
+    ifInterrupt vifInterrupt_Rx();
+    
+       `ifdef INTERRUPT_COM
+     .ctrl_if_0(vifInterrupt_Tx.ctrl_if),
+   `else
+     .ctrl_tif_0(vifInterrupt_Tx.ctrl_tif),
+     .ctrl_rif_0(vifInterrupt_Tx.ctrl_rif),
+     .ctrl_pif_0(vifInterrupt_Tx.ctrl_pif),
+     .ctrl_oif_0(vifInterrupt_Tx.ctrl_oif),
+     .ctrl_fif_0(vifInterrupt_Tx.ctrl_fif),
+   `endif
+   
+   
+    `ifdef INTERRUPT_COM
+     .ctrl_if_1(vifInterrupt_Rx.ctrl_if),
+   `else
+     .ctrl_tif_1(vifInterrupt_Rx.ctrl_tif),
+     .ctrl_rif_1(vifInterrupt_Rx.ctrl_rif),
+     .ctrl_pif_1(vifInterrupt_Rx.ctrl_pif),
+     .ctrl_oif_1(vifInterrupt_Rx.ctrl_oif),
+     .ctrl_fif_1(vifInterrupt_Rx.ctrl_fif),
+   `endif
+
+    //
+    uvm_config_db#(virtual interface ifInterrupt)::set(null,"uvm_test_top.coEnv.coApbMasterAgentTx*","vifInterrupt",vifInterrupt_Tx);
+    uvm_config_db#(virtual interface ifInterrupt)::set(null,"uvm_test_top.coEnv.coApbMasterAgentRx*","vifInterrupt",vifInterrupt_Rx);
+    
+5/ Correct cApbMasterSequencer
+
+virtual interface ifInterrupt vifInterrupt;
+
+if(!uvm_config_db#(virtual interface ifInterrupt)::get(this,"","vifInterrupt",vifInterrupt)) begin
+			`uvm_error("cVSequencer","Can't get vifInterrupt!!!")
+		end
+    
+6/ Remove the interface connection at cVSequencer
+
+Comment all
