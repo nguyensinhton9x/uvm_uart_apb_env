@@ -12,14 +12,19 @@
 typedef class cApbMasterAgent;
 
 class cApbMasterSequencer extends uvm_sequencer#(cApbTransaction);
-	
-	cApbMasterAgent coApbMasterAgentTx;
-	cApbMasterAgent coApbMasterAgentRx;
-	
+	//Register to Factory
 	`uvm_component_utils(cApbMasterSequencer)
-  
+	//Declare Instances to call in test pattern
+	cApbMasterAgent coApbMasterAgent;
+  //Declare the interrupt interface  
+  virtual interface ifInterrupt vifInterrupt;
+  //Constructor
 	function new (string name = "cApbMasterSequencer", uvm_component parent = null);
 		super.new(name,parent);
+    //Check the interrupt connection
+    if(!uvm_config_db#(virtual interface ifInterrupt)::get(this,"","vifInterrupt",vifInterrupt)) begin
+			`uvm_error("cVSequencer","Can't get vifInterrupt!!!")
+		end
 	endfunction
 endclass
 
@@ -51,83 +56,80 @@ class cApbMasterWriteSeq extends uvm_sequence#(cApbTransaction);
 endclass
 
 class cApbMasterAgent extends uvm_agent;
-    cApbMasterDriver    coApbMasterDriver;
-    cApbMasterSequencer coApbMasterSequencer;
-    cApbMasterMonitor   coApbMasterMonitor;
+  `uvm_component_utils(cApbMasterAgent)
+  
+  cApbMasterDriver    coApbMasterDriver;
+  cApbMasterSequencer coApbMasterSequencer;
+  cApbMasterMonitor   coApbMasterMonitor;
 
-    function new(string name = "cApbMasterAgent", uvm_component parent);
-        super.new(name, parent);
-    endfunction
+  function new(string name = "cApbMasterAgent", uvm_component parent);
+      super.new(name, parent);
+  endfunction
 
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        coApbMasterDriver    = cApbMasterDriver::type_id::create("coApbMasterDriver",this);
-        coApbMasterSequencer = cApbMasterSequencer::type_id::create("coApbMasterSequencer",this);
-        coApbMasterMonitor   = cApbMasterMonitor::type_id::create("coApbMasterMonitor",this);
-    endfunction
+  function void build_phase(uvm_phase phase);
+      super.build_phase(phase);
+      coApbMasterDriver    = cApbMasterDriver::type_id::create("coApbMasterDriver",this);
+      coApbMasterSequencer = cApbMasterSequencer::type_id::create("coApbMasterSequencer",this);
+      coApbMasterMonitor   = cApbMasterMonitor::type_id::create("coApbMasterMonitor",this);
+  endfunction
 
-    function void connect_phase(uvm_phase phase);
-        super.connect_phase(phase);
-        coApbMasterDriver.seq_item_port.connect(coApbMasterSequencer.seq_item_export);
-    endfunction
-
-    `uvm_component_utils(cApbMasterAgent)
+  function void connect_phase(uvm_phase phase);
+      super.connect_phase(phase);
+      coApbMasterDriver.seq_item_port.connect(coApbMasterSequencer.seq_item_export);
+  endfunction
+    
 endclass
 
 
 class cVSequencer extends uvm_sequencer#(cApbTransaction);
+  //Register to Factory
 	`uvm_component_utils(cVSequencer)
-
-	cApbMasterSequencer cApbMasterSequencerTx;
-	cApbMasterSequencer cApbMasterSequencerRx;
-
+  //Declare all used instances
+	cApbMasterAgent coApbMasterAgentTx;
+	cApbMasterAgent coApbMasterAgentRx;
 	cScoreboard coScoreboard;
-
-	virtual interface ifInterrupt vifInterrupt;
-
-   // TODO: component must have variable "parent"
-   //       object must not have veriable "parent" (refer to class cVSequence) 
+  //
+  // TODO: component must have variable "parent"
+  // object must not have veriable "parent" (refer to class cVSequence) 
 	function new (string name = "cVSequencer", uvm_component parent = null);
 		super.new(name,parent);
+    //Add more code if any
 	endfunction
 
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
-		if(!uvm_config_db#(virtual interface ifInterrupt)::get(this,"","vifInterrupt",vifInterrupt)) begin
-			`uvm_error("cVSequencer","Can't get vifInterrupt!!!")
-		end
+    //Add more code if any
 	endfunction
 
 endclass
 
 
 class cVSequence extends uvm_sequence#(cApbTransaction);
+  //Register to Factory
 	`uvm_object_utils(cVSequence)
-
+  // Object must not have veriable "parent" (refer to class cVSequencer)
 	function new (string name = "cVSequence");
 		super.new(name);
 	endfunction
-
+  //TEST PATTERN is written at here
   task body();
     // Content of test pattern.
   endtask
 endclass
 
 class cEnv extends uvm_env;
-	`uvm_component_utils_begin(cEnv)
-	`uvm_component_utils_end
-
+  //Register to Factory
+	`uvm_component_utils(cEnv)
+  //Declare Agent, Scoreboard and Sequencer
 	cApbMasterAgent coApbMasterAgentTx;
 	cApbMasterAgent coApbMasterAgentRx;
-
 	cScoreboard coScoreboard;
-
 	cVSequencer coVSequencer;
-
+  //Constructor
 	function new (string name = "cEnv", uvm_component parent = null);
 		super.new(name,parent);
 	endfunction
-
+  //Create the objects for Agent, Scoreboard and Sequencer
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
 		coApbMasterAgentTx = cApbMasterAgent::type_id::create("coApbMasterAgentTx",this);
@@ -135,39 +137,42 @@ class cEnv extends uvm_env;
 		coScoreboard = cScoreboard::type_id::create("coScoreboard",this);
 		coVSequencer = cVSequencer::type_id::create("coVSequencer",this);
 	endfunction
-
+  //Connect UVM components
 	function void connect_phase(uvm_phase phase);
 		super.connect_phase(phase);
-
-		$cast(coVSequencer.cApbMasterSequencerTx.coApbMasterAgentTx, coApbMasterAgentTx);
-		$cast(coVSequencer.cApbMasterSequencerRx.coApbMasterAgentRx, coApbMasterAgentRx);
-
+    //Dynamic casting
+		$cast(coVSequencer.coApbMasterAgentTx, this.coApbMasterAgentTx);
+		$cast(coVSequencer.coApbMasterAgentRx, this.coApbMasterAgentRx);
+    $cast(coVSequencer.coScoreboard, this.coScoreboard);
+    //Connect Monitor and Scoreboard by TLM port
 		coApbMasterAgentTx.coApbMasterMonitor.ap_toScoreboardWrite.connect(coScoreboard.aimp_frmMonitorWrite);
-		// Add more connection here
 	endfunction
 endclass
 
 class cTest extends uvm_test;
+  //Register to Factory
 	`uvm_component_utils(cTest)
-
+  //Declare all instances
 	cEnv coEnv;
 	cVSequence coVSequence; 
-
+  //Constructor
 	function new (string name = "cTest", uvm_component parent = null);
 		super.new(name,parent);
 	endfunction
-
+  //Build phase
+  //Create all objects by the method type_id::create()
 	function void build_phase(uvm_phase phase);
 		super.build_phase(phase);
 		coEnv = cEnv::type_id::create("coEnv",this);
 		coVSequence = cVSequence::type_id::create("coVSequence");
 	endfunction
-
+  //Run phase
 	task run_phase(uvm_phase phase);
 		super.run_phase(phase);
 		phase.raise_objection(this);
 		fork
 			coVSequence.start(coEnv.coVSequencer);
+      `uvm_info(get_full_name(), "run phase completed.", UVM_LOW)
 			begin
 				#1ms;
 				`uvm_error("TEST SEQUENCE", "TIMEOUT!!!")

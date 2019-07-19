@@ -54,48 +54,48 @@ class cScoreboard extends uvm_scoreboard;
         //void '(get_frmMonitorRead.try_put(TransRead));
     endfunction
 	// declare queue for storing the data of each transaction
-   bit queue_transaction_1[$];
+   byte queue_transaction_1[$];
    // declare the variable, take the data oldest storing in queue
    bit queue_compare;
    virtual task run_phase(uvm_phase phase);
     // TODO: compile error - coApbTransaction khong ton tai, --> cApbTransaction (fixed) 
-      cApbTransaction Trans_write_side, Trans_read_side;
-	  
-	  forever begin
-	     `uvm_info("SB", "waiting for receiving the transaction at write side", UVM_DEBUG);
-		 // TODO: khong dung code nay
-		 //get_frmMonitorWrite.get(Trans_write_side);
-		 `uvm_info("SB", "waiting for receiving the transaction at read side", UVM_DEBUG);
-		 // get transaction from write macro 
-		 //TODO: Khong dung code nay
-		 //get_frmMonitorRead.get(Trans_write_side);
-		 // store the data in queue, if this transaction is write to data register
-		 if (Trans_write_side.pwrite && Trans_write_side.paddr[4:0] =='h0C) begin
-		    queue_transaction_1.push_back(Trans_read_side.pwdata);
-		// take the oldest data for comparing with the data output
-			queue_compare = queue_transaction_1.pop_front();
-		 end
-		 if (~Trans_read_side.pwrite && Trans_read_side.paddr[4:0] == 5'h0C) begin
-		 // compare data output with the oldest data in queue
-		    if (Trans_write_side.prdata == queue_compare) begin  
-			   `uvm_info("PASS", $sformatf("Write to data register =%s    Read from data register \n", 
-			    Trans_write_side.pwdata, Trans_read_side.prdata), UVM_DEBUG)
-			    queue_transaction_1.delete(0);
-			end else begin
-			    `uvm_info("ERROR", $sformatf("Write to data register =%s    Read from data register \n", 
-			              Trans_write_side.pwdata, Trans_read_side.prdata), UVM_DEBUG)
-			end
-		 end
-		 // check condition illegal when no data in register but read transaction come
-		 //if (queue_transaction_1 == null  && ~output_data.pwrite && output_data.paddr[4:0] == 5'h0C )
-		 //    `uvm_info("SB FAIL", "Read trasaction come when register data is empty", UVM_DEBUG)
-	  end
+//    cApbTransaction Trans_write_side, Trans_read_side;
+//	  
+//	  forever begin
+//	     `uvm_info("SB", "waiting for receiving the transaction at write side", UVM_DEBUG);
+//		 // TODO: khong dung code nay
+//		 //get_frmMonitorWrite.get(Trans_write_side);
+//		 `uvm_info("SB", "waiting for receiving the transaction at read side", UVM_DEBUG);
+//		 // get transaction from write macro 
+//		 //TODO: Khong dung code nay
+//		 //get_frmMonitorRead.get(Trans_write_side);
+//		 // store the data in queue, if this transaction is write to data register
+//		 if (Trans_write_side.pwrite && Trans_write_side.paddr[4:0] =='h0C) begin
+//		    queue_transaction_1.push_back(Trans_read_side.pwdata);
+//		// take the oldest data for comparing with the data output
+//			queue_compare = queue_transaction_1.pop_front();
+//		 end
+//		 if (~Trans_read_side.pwrite && Trans_read_side.paddr[4:0] == 5'h0C) begin
+//		 // compare data output with the oldest data in queue
+//		    if (Trans_write_side.prdata == queue_compare) begin  
+//			   `uvm_info("PASS", $sformatf("Write to data register =%s    Read from data register \n", 
+//			    Trans_write_side.pwdata, Trans_read_side.prdata), UVM_DEBUG)
+//			    queue_transaction_1.delete(0);
+//			end else begin
+//			    `uvm_info("ERROR", $sformatf("Write to data register =%s    Read from data register \n", 
+//			              Trans_write_side.pwdata, Trans_read_side.prdata), UVM_DEBUG)
+//			end
+//		 end
+//		 // check condition illegal when no data in register but read transaction come
+//		 //if (queue_transaction_1 == null  && ~output_data.pwrite && output_data.paddr[4:0] == 5'h0C )
+//		 //    `uvm_info("SB FAIL", "Read trasaction come when register data is empty", UVM_DEBUG)
+//	  end
 	endtask
 	
 	// Check queue is already empty when finish running scoreboard
 	function void report_phase(uvm_phase phase);
 	   super.report_phase(phase);
-	   if (queue_transaction_1 == null) begin
+	   if (queue_transaction_1.size() == 0) begin
 	      `uvm_info("COMPLETED", "Write and Read transaction succesfull", UVM_LOW )
 	   end else 
 	      `uvm_info("NOT COMPLETED", "Write and Read transaction fail", UVM_LOW)

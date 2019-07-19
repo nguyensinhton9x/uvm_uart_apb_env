@@ -12,7 +12,7 @@
 //`include "ifDut.sv"
 class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //1. Declare the virtual interface
-  virtual interface ifApbMaster uart_vifApbMaster;
+  virtual ifApbMaster uart_vifApbMaster;
   //2. Register to the factory
   //`uvm_component_utils is for non-parameterized classes
   `uvm_component_utils(cApbMasterDriver)
@@ -31,15 +31,15 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
     super.build_phase(phase);
     //All of the functions in uvm_config_db are static, using :: to call them
     //If the call "get" is unsuccessful, the fatal is triggered
-    if (!uvm_config_db#(virtual interface ifApbMaster)::get(.cntxt(uvm_root::get()),
-          .inst_name("*"),
+    if (!uvm_config_db#(virtual interface ifApbMaster)::get(.cntxt(this),
+          .inst_name(""),
           .field_name("vifApbMaster"),
           .value(uart_vifApbMaster))) begin
        //`uvm_fatal(ID, MSG)
        //ID: message tag
        //MSG message text
        //get_full_name returns the full hierarchical name of the driver object
-       `uvm_fatal("NON-APBIF", {"A virtual interface must be set for: ", get_full_name(), "uart_vifApbMaster"})
+       `uvm_fatal("NON-APBIF", {"A virtual interface must be set for: ", get_full_name(), ".uart_vifApbMaster"})
      end
       //
       `uvm_info(get_full_name(), "Build phase completed.", UVM_LOW)
@@ -69,15 +69,15 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //in non-reset mode
   //Run time: run until the end of the simulation
   virtual task get_seq_and_drive();
-    while (1) begin
-      if (uart_vifApbMaster.preset_n) begin
+    while (uart_vifApbMaster.preset_n) begin
+      //if (uart_vifApbMaster.preset_n) begin
         //The seq_item_port.get_next_item is used to get items from the sequencer
         seq_item_port.get_next_item(req);
         //req is assigned to convert_seq2apb to drive the APB interface
         convert_seq2apb(req);
         //Report the done execution
         seq_item_port.item_done();
-      end
+      //end
     end
   endtask: get_seq_and_drive
   //

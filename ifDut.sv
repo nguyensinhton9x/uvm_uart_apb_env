@@ -20,7 +20,7 @@ interface ifApbMaster;
   logic        pslverr;
 endinterface: ifApbMaster
 //Interrupt interface 
-interface ifInterrupt (input logic pclk, input logic preset_n);
+interface ifInterrupt;
   `ifdef INTERRUPT_COM
     logic ctrl_if;
   `else
