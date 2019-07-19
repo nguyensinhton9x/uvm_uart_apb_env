@@ -5,7 +5,7 @@
 //Author:  Nguyen Hung Quan, Pham Thanh Tram, Nguyen Sinh Ton, Doan Duc Hoang, Truong Cong Hoang Viet
 //Page:    VLSI Technology
 //--------------------------------------
-`include "uart_top.v"
+//`include "uart_top.v"
 module dut_top (
    //UART 0
    pclk_0, preset_n_0, pwrite_0, psel_0, penable_0, paddr_0,

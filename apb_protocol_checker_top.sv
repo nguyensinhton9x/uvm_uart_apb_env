@@ -15,12 +15,12 @@ module apb_protocol_checker_top;
     assign apb0_chk.preset_n = `apb0_if.preset_n_0;
     assign apb0_chk.pwrite   = `apb0_if.pwrite_0;
     assign apb0_chk.psel     = `apb0_if.psel_0;
-    assign apb0_chk.penabl   = `apb0_if.penable_0;
+    assign apb0_chk.penable   = `apb0_if.penable_0;
     assign apb0_chk.paddr    = `apb0_if.paddr_0;
     assign apb0_chk.pwdata   = `apb0_if.pwdata_0;
     assign apb0_chk.pstrb    = `apb0_if.pstrb_0;
     assign apb0_chk.prdata   = `apb0_if.prdata_0;
-    assign apb0_chk.pread    = `apb0_if.pready_0;
+    assign apb0_chk.pready    = `apb0_if.pready_0;
     assign apb0_chk.pslverr  = `apb0_if.pslverr_0;
   
   apb_protocol_checker apb1_chk();
@@ -28,11 +28,11 @@ module apb_protocol_checker_top;
     assign apb1_chk.preset_n = `apb1_if.preset_n_1;
     assign apb1_chk.pwrite   = `apb1_if.pwrite_1;
     assign apb1_chk.psel     = `apb1_if.psel_1;
-    assign apb1_chk.penabl   = `apb1_if.penable_1;
+    assign apb1_chk.penable   = `apb1_if.penable_1;
     assign apb1_chk.paddr    = `apb1_if.paddr_1;
     assign apb1_chk.pwdata   = `apb1_if.pwdata_1;
     assign apb1_chk.pstrb    = `apb1_if.pstrb_1;
     assign apb1_chk.prdata   = `apb1_if.prdata_1;
-    assign apb1_chk.pread    = `apb1_if.pready_1;
+    assign apb1_chk.pready    = `apb1_if.pready_1;
     assign apb1_chk.pslverr  = `apb1_if.pslverr_1;
 endmodule

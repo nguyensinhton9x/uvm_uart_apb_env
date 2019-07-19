@@ -59,7 +59,7 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //Run time: run until the end of the simulation
   virtual task reset_all();
     while (1) begin
-      @ (negedge uart_ifApbMaster.presetn);
+      @ (negedge uart_ifApbMaster.preset_n);
       `uvm_info (get_type_name(), "Resetting", UVM_LOW)
       uart_ifApbMaster.psel    = 1'b0;
       uart_ifApbMaster.penable = 1'b0;
@@ -70,7 +70,7 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
   //Run time: run until the end of the simulation
   virtual task get_seq_and_drive();
     while (1) begin
-      if (uart_ifApbMaster.presetn) begin
+      if (uart_ifApbMaster.preset_n) begin
         //The seq_item_port.get_next_item is used to get items from the sequencer
         seq_item_port.get_next_item(req);
         //req is assigned to convert_seq2apb to drive the APB interface
@@ -103,12 +103,12 @@ class cApbMasterDriver extends uvm_driver #(cApbTransaction);
       //PREADY
       //Check the timeout of APB interface
       do begin
-        if (i == uart_ifApbMaster.APB_TRANSACTION_TIMEOUT) begin
+        if (i == userApbTransaction.APB_TRANSACTION_TIMEOUT) begin
           `uvm_error ("[APB_TIMEOUT]", "PREADY is not asserted 1")
         end
         repeat (1) @ (posedge uart_ifApbMaster.pclk); //Hold one cycle
         i = i+1;
-      end while (~uart_ifApbMaster.pready && (i <= uart_ifApbMaster.APB_TRANSACTION_TIMEOUT));
+      end while (~uart_ifApbMaster.pready && (i <= userApbTransaction.APB_TRANSACTION_TIMEOUT));
       //Check READ transaction
       if (~uart_ifApbMaster.pwrite && uart_ifApbMaster.pready) begin
          userApbTransaction.prdata[31:0] = uart_ifApbMaster.prdata[31:0];
