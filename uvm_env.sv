@@ -9,9 +9,15 @@
 //Page:    VLSI Technology
 //--------------------------------------
 
-class cApbMasterSequencer extends uvm_sequencer#(cApbTransaction);
-	`uvm_component_utils(cApbMasterSequencer)
+typedef class cApbMasterAgent;
 
+class cApbMasterSequencer extends uvm_sequencer#(cApbTransaction);
+	
+	cApbMasterAgent coApbMasterAgentTx;
+	cApbMasterAgent coApbMasterAgentRx;
+	
+	`uvm_component_utils(cApbMasterSequencer)
+  
 	function new (string name = "cApbMasterSequencer", uvm_component parent = null);
 		super.new(name,parent);
 	endfunction
@@ -133,8 +139,8 @@ class cEnv extends uvm_env;
 	function void connect_phase(uvm_phase phase);
 		super.connect_phase(phase);
 
-		$cast(coVSequencer.coApbMasterAgentTx, coApbMasterAgentTx);
-		$cast(coVSequencer.coApbMasterAgentRx, coApbMasterAgentRx);
+		$cast(coVSequencer.cApbMasterSequencerTx.coApbMasterAgentTx, coApbMasterAgentTx);
+		$cast(coVSequencer.cApbMasterSequencerRx.coApbMasterAgentRx, coApbMasterAgentRx);
 
 		coApbMasterAgentTx.coApbMasterMonitor.ap_toScoreboardWrite.connect(coScoreboard.aimp_frmMonitorWrite);
 		// Add more connection here

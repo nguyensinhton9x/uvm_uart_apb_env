@@ -44,7 +44,7 @@ class cScoreboard extends uvm_scoreboard;
 	    `uvm_info("Get_Trans APB1", $sformatf("Transaction type=%s\n Transaction address=%s\n Transaction data=%s\n ",
 		          TransWrite.pwrite, TransWrite.paddr, TransWrite.pwdata), UVM_DEBUG)
     
-	     void '(get_frmMonitorWrite.try_put(TransWrite));
+	     //void '(get_frmMonitorWrite.try_put(TransWrite));
 	endfunction
 	// define and dump to the screen information about transaction type, data, address of each transactions	
 	function void write_frmMonitorRead(cApbTransaction TransRead);
@@ -87,8 +87,8 @@ class cScoreboard extends uvm_scoreboard;
 			end
 		 end
 		 // check condition illegal when no data in register but read transaction come
-		 if (queue_transaction_1 == null  && ~output_data.pwrite && output_data.paddr[4:0] == 5'h0C )
-		     `uvm_info("SB FAIL", "Read trasaction come when register data is empty", UVM_DEBUG)
+		 //if (queue_transaction_1 == null  && ~output_data.pwrite && output_data.paddr[4:0] == 5'h0C )
+		 //    `uvm_info("SB FAIL", "Read trasaction come when register data is empty", UVM_DEBUG)
 	  end
 	endtask
 	

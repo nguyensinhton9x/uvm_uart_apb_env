@@ -1,0 +1,95 @@
+Note: http://www.csit-sun.pub.ro/ise/Mentor_Graphics/QuestaSim_10.7c/INSTALL_NOTES.txt
+Download gcc: http://www.csit-sun.pub.ro/ise/Mentor_Graphics/
+
+
+- Steps:
+
+vlog -work work -sv testTop.sv +incdir+C:/questasim64_10.2c/uvm-1.2/src +define+UVM_CMDLINE_NO_DPI +define+UVM_REGEX_NO_DPI +define+UVM_NO_DPI
+
+vsim -novopt work.testTop +UVM_TESTNAME=cTest
+
+run 1ns
+
+
+- Result:
+
+1/ Neu chay vsim thanh cong thi log file nhu sau
+
+vsim -novopt work.testTop +UVM_TESTNAME=cTest
+# vsim +UVM_TESTNAME=cTest -novopt work.testTop 
+# Loading C:\Users\8560w\AppData\Local\Temp\8560w@8560W-PC_dpi_3008\win64_gcc-4.5.0\export_tramp.dll
+# Loading sv_std.std
+# Loading work.uvm_pkg
+# Loading work.testTop
+# ** Note: (vsim-8785) UVM-aware debugging capabilities will be disabled since no compiled "questa_uvm_pkg" can be found.
+# 
+# This also means that later if you turn on UVM-aware debugging your debug simulations may have
+# 
+# different random seeds from your non-debug simulations.
+# 
+# Loading work.apb_protocol_checker_top
+# Loading work.apb_protocol_checker
+# Loading work.uart_protocol_checker_top
+# Loading work.uart_protocol_checker
+# Loading work.ifApbMaster
+# Loading work.dut_top
+# Loading work.uart_top
+# Loading work.uart_apb_if
+# Loading work.uart_receiver
+# Loading work.uart_transmitter
+# Compiling C:\Users\8560w\AppData\Local\Temp\8560w@8560W-PC_dpi_3008\win64_gcc-4.5.0\exportwrapper.c
+# Loading C:\Users\8560w\AppData\Local\Temp\8560w@8560W-PC_dpi_3008\win64_gcc-4.5.0\dpi_auto_compile.dll
+
+
+2/ Chay run OK thi log file hien tai nhu sau (dang FATAL):
+
+run 1ns
+# UVM_INFO C:/questasim64_10.2c/uvm-1.2/src/base/uvm_root.svh(392) @ 0: reporter [UVM/RELNOTES] 
+# ----------------------------------------------------------------
+# UVM-1.2
+# (C) 2007-2014 Mentor Graphics Corporation
+# (C) 2007-2014 Cadence Design Systems, Inc.
+# (C) 2006-2014 Synopsys, Inc.
+# (C) 2011-2013 Cypress Semiconductor Corp.
+# (C) 2013-2014 NVIDIA Corporation
+# ----------------------------------------------------------------
+# 
+#   ***********       IMPORTANT RELEASE NOTES         ************
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_NO_DEPRECATED undefined.
+#   See http://www.eda.org/svdb/view.php?id=3313 for more details.
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_OBJECT_DO_NOT_NEED_CONSTRUCTOR undefined.
+#   See http://www.eda.org/svdb/view.php?id=3770 for more details.
+# 
+#       (Specify +UVM_NO_RELNOTES to turn off this notice)
+# 
+# UVM_INFO C:/questasim64_10.2c/uvm-1.2/src/base/uvm_root.svh(453) @ 0: reporter [NO_DPI_TSTNAME] UVM_NO_DPI defined--getting UVM_TESTNAME directly, without DPI
+# UVM_INFO @ 0: reporter [RNTST] Running test cTest...
+# UVM_FATAL cApbMasterDriver.sv(42) @ 0: uvm_test_top.coEnd.coApbMasterAgentRx.coApbMasterDriver [NON-APBIF] A virtual interface must be set for: uvm_test_top.coEnd.coApbMasterAgentRx.coApbMasterDriver.uart_ifApbMaster
+# UVM_INFO C:/questasim64_10.2c/uvm-1.2/src/base/uvm_report_server.svh(847) @ 0: reporter [UVM/REPORT/SERVER] 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :    3
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    1
+# ** Report counts by id
+# [NON-APBIF]     1
+# [NO_DPI_TSTNAME]     1
+# [RNTST]     1
+# [UVM/RELNOTES]     1
+# 
+# ** Note: $finish    : C:/questasim64_10.2c/uvm-1.2/src/base/uvm_root.svh(135)
+#    Time: 0 ns  Iteration: 10  Region: /uvm_pkg::uvm_phase::m_run_phases
+# 1
+# Break in Function uvm_pkg/uvm_root::die at C:/questasim64_10.2c/uvm-1.2/src/base/uvm_root.svh line 135
+
+
+
+
+
+
